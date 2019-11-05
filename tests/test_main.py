@@ -511,9 +511,7 @@ class TestFxTurnOver:
         fto_date_multi = FxTurnOver(dates=[datetime(2019, 1, 2), datetime(2019, 1, 3)])
         fto_month = FxTurnOver(months="2019-01")
         fto_month_multi = FxTurnOver(months=["2019-01", "2019-02"])
-        fto_range = FxTurnOver(
-            start=datetime(2019, 1, 2), end=datetime(2019, 1, 4)
-        )
+        fto_range = FxTurnOver(start=datetime(2019, 1, 2), end=datetime(2019, 1, 4))
         fto_range_multi = FxTurnOver(
             start=datetime(2019, 1, 29), end=datetime(2019, 2, 3)
         )
@@ -534,3 +532,52 @@ class TestFxTurnOver:
             "fx-turn-over/year/2019/month/1",
             "fx-turn-over/year/2019/month/2",
         ]
+
+    def test_data_simple(self, mock_fx_turn_over):
+        fto = FxTurnOver()
+        fto_date = FxTurnOver(dates=datetime(2019, 1, 2))
+        fto_month = FxTurnOver(months="2019-01")
+
+        assert [d["date"] for d in fto.data] == [datetime(2019, 11, 4)]
+        assert [d["date"] for d in fto_date.data] == [datetime(2019, 1, 2)]
+        assert set([d["date"] for d in fto_month.data]) == set(
+            [
+                datetime(2019, 1, 31),
+                datetime(2019, 1, 30),
+                datetime(2019, 1, 29),
+                datetime(2019, 1, 28),
+                datetime(2019, 1, 25),
+                datetime(2019, 1, 24),
+                datetime(2019, 1, 23),
+                datetime(2019, 1, 22),
+                datetime(2019, 1, 18),
+                datetime(2019, 1, 17),
+                datetime(2019, 1, 16),
+                datetime(2019, 1, 15),
+                datetime(2019, 1, 14),
+                datetime(2019, 1, 11),
+                datetime(2019, 1, 10),
+                datetime(2019, 1, 9),
+                datetime(2019, 1, 8),
+                datetime(2019, 1, 7),
+                datetime(2019, 1, 4),
+                datetime(2019, 1, 3),
+                datetime(2019, 1, 2),
+            ]
+        )
+
+    def test_data_complex(self, mock_fx_turn_over):
+        fto_date_multi = FxTurnOver(dates=[datetime(2019, 1, 2), datetime(2019, 1, 3)])
+        fto_month_multi = FxTurnOver(months=["2019-01", "2019-02"])
+        fto_range = FxTurnOver(start=datetime(2019, 1, 2), end=datetime(2019, 1, 4))
+        fto_range_multi = FxTurnOver(
+            start=datetime(2019, 1, 29), end=datetime(2019, 2, 3)
+        )
+        assert set([d["date"] for d in fto_date_multi.data]) == set(
+            [datetime(2019, 1, 2), datetime(2019, 1, 3)]
+        )
+        # assert set([d["date"] for d in fto_month_multi.data]) == set([])
+        assert set([d["date"] for d in fto_range.data]) == set(
+            [[datetime(2019, 1, 2), datetime(2019, 1, 3)], datetime(2019, 1, 4)]
+        )
+        # assert set([d["date"] for d in fto_range_multi.data]) == set([])
