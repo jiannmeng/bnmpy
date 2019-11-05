@@ -52,3 +52,7 @@ class BaseRate(BnmpyItem):
             endpoints = [f"base-rate/{b}" for b in bank_codes]
 
         super().__init__(endpoints=endpoints)
+
+
+class FxTurnOver(BnmpyItem):
+    pass
