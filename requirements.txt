@@ -1,0 +1,9 @@
+# App dependencies
+requests
+responses
+pytest
+
+# Clean code
+black
+rope
+flake8
