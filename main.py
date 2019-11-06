@@ -1,6 +1,6 @@
 import requests
 
-from util import ensure_list
+from util import endpoint_merge, ensure_list, to_datetime, to_strlist
 
 BASE_URL = "https://api.bnm.gov.my/public/"
 HEADERS = {"Accept": "application/vnd.BNM.API.v1+json"}
@@ -40,6 +40,20 @@ class BnmpyItem:
             if r.status_code == requests.codes.ok:
                 d = ensure_list(r.json()["data"])
                 data.extend(d)
+
+        if all(
+            [hasattr(self, "start"), hasattr(self, "end"), hasattr(self, "filter_key")]
+        ):
+            # Delete anything in data which is not between start and end dates.
+            self.start = to_datetime(self.start)
+            self.end = to_datetime(self.end)
+
+            data = [
+                entry
+                for entry in data
+                if self.start <= to_datetime(entry[self.filter_key]) <= self.end
+            ]
+
         return data
 
 
@@ -55,4 +69,17 @@ class BaseRate(BnmpyItem):
 
 
 class FxTurnOver(BnmpyItem):
-    pass
+    def __init__(self, dates=None, start=None, end=None):
+        if dates is None and start is None and end is None:
+            endpoints = "fx-turn-over"
+        elif dates is not None:
+            endpoints = endpoint_merge("fx-turn-over", to_strlist(dates=dates))
+        elif start is not None and end is not None:
+            self.start = start
+            self.end = end
+            self.filter_key = "date"
+            endpoints = endpoint_merge(
+                "fx-turn-over", to_strlist(start=start, end=end, period="month")
+            )
+
+        super().__init__(endpoints=endpoints)

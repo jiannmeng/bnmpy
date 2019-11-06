@@ -1,8 +1,9 @@
-import responses
-import pytest
-
-from main import BnmpyItem, BaseRate, FxTurnOver, BASE_URL
 from datetime import datetime
+
+import pytest
+import responses
+
+from main import BASE_URL, BaseRate, BnmpyItem, FxTurnOver
 
 
 @pytest.fixture
@@ -382,7 +383,7 @@ def mock_fx_turn_over():
         )
         r.add(
             responses.GET,
-            BASE_URL + "fx-turn-over/year/2019/month/1",
+            BASE_URL + "fx-turn-over/year/2019/month/01",
             json={
                 "data": [
                     {"date": "2019-01-31", "total_sum": 14.17},
@@ -413,7 +414,7 @@ def mock_fx_turn_over():
         )
         r.add(
             responses.GET,
-            BASE_URL + "fx-turn-over/year/2019/month/2",
+            BASE_URL + "fx-turn-over/year/2019/month/02",
             json={
                 "data": [
                     {"date": "2019-02-28", "total_sum": 12.84},
@@ -460,23 +461,23 @@ def mock_boilerplate():
 
 
 class TestBnmpyItem:
-    def test_single(self, mock_basic):
+    def test_data_single(self, mock_basic):
         b = BnmpyItem("single")
         assert b.data == [{"hello": "world"}]
 
-    def test_list_single(self, mock_basic):
+    def test_data_list_single(self, mock_basic):
         b = BnmpyItem("list-single")
         assert b.data == [{"hello": "world"}]
 
-    def test_list_multi(self, mock_basic):
+    def test_data_list_multi(self, mock_basic):
         b = BnmpyItem("list-multi")
         assert b.data == [{"hello": "world"}, {"foo": "bar"}]
 
-    def test_none(self, mock_basic):
+    def test_data_none(self, mock_basic):
         b = BnmpyItem("none")
         assert b.data == []
 
-    def test_list_combine(self, mock_basic):
+    def test_data_list_combine(self, mock_basic):
         b = BnmpyItem(["none", "single", "list-single", "list-multi", "fail"])
         assert b.data == [
             {"hello": "world"},
@@ -487,97 +488,63 @@ class TestBnmpyItem:
 
 
 class TestBaseRate:
-    def test_endpoints_and_data(self, mock_base_rate):
+    def test_latest(self, mock_base_rate):
         br = BaseRate()
-        br_maybank = BaseRate("MBBEMYKL")
-        br_multi = BaseRate(["MBBEMYKL", "CIBBMYKL"])
-
         assert br.endpoints == ["base-rate"]
-        assert br_maybank.endpoints == ["base-rate/MBBEMYKL"]
-        assert br_multi.endpoints == ["base-rate/MBBEMYKL", "base-rate/CIBBMYKL"]
-
-        assert any(["MBBEMYKL" in d.values() for d in br.data])
-        assert any(["MBBEMYKL" in d.values() for d in br_maybank.data])
-        assert any(["MBBEMYKL" in d.values() for d in br_multi.data])
-        assert any(["CIBBMYKL" in d.values() for d in br.data])
-        assert any(["CIBBMYKL" in d.values() for d in br_multi.data])
-        assert any(["BKCHMYKL" in d.values() for d in br.data])
-
-
-class TestFxTurnOver:
-    def test_endpoints(self, mock_fx_turn_over):
-        fto = FxTurnOver()
-        fto_date = FxTurnOver(dates=datetime(2019, 1, 2))
-        fto_date_multi = FxTurnOver(dates=[datetime(2019, 1, 2), datetime(2019, 1, 3)])
-        fto_month = FxTurnOver(months="2019-01")
-        fto_month_multi = FxTurnOver(months=["2019-01", "2019-02"])
-        fto_range = FxTurnOver(start=datetime(2019, 1, 2), end=datetime(2019, 1, 4))
-        fto_range_multi = FxTurnOver(
-            start=datetime(2019, 1, 29), end=datetime(2019, 2, 3)
-        )
-
-        assert fto.endpoints == ["fx-turn-over"]
-        assert fto_date.endpoints == ["fx-turn-over/2019-01-02"]
-        assert fto_date_multi.endpoints == [
-            "fx-turn-over/2019-01-02",
-            "fx-turn-over/2019-01-03",
-        ]
-        assert fto_month.endpoints == ["fx-turn-over/year/2019/month/1"]
-        assert fto_month_multi.endpoints == [
-            "fx-turn-over/year/2019/month/1",
-            "fx-turn-over/year/2019/month/2",
-        ]
-        assert fto_range.endpoints == ["fx-turn-over/year/2019/month/1"]
-        assert fto_range_multi.endpoints == [
-            "fx-turn-over/year/2019/month/1",
-            "fx-turn-over/year/2019/month/2",
-        ]
-
-    def test_data_simple(self, mock_fx_turn_over):
-        fto = FxTurnOver()
-        fto_date = FxTurnOver(dates=datetime(2019, 1, 2))
-        fto_month = FxTurnOver(months="2019-01")
-
-        assert [d["date"] for d in fto.data] == [datetime(2019, 11, 4)]
-        assert [d["date"] for d in fto_date.data] == [datetime(2019, 1, 2)]
-        assert set([d["date"] for d in fto_month.data]) == set(
+        assert len(br.data) == 35
+        assert all(
             [
-                datetime(2019, 1, 31),
-                datetime(2019, 1, 30),
-                datetime(2019, 1, 29),
-                datetime(2019, 1, 28),
-                datetime(2019, 1, 25),
-                datetime(2019, 1, 24),
-                datetime(2019, 1, 23),
-                datetime(2019, 1, 22),
-                datetime(2019, 1, 18),
-                datetime(2019, 1, 17),
-                datetime(2019, 1, 16),
-                datetime(2019, 1, 15),
-                datetime(2019, 1, 14),
-                datetime(2019, 1, 11),
-                datetime(2019, 1, 10),
-                datetime(2019, 1, 9),
-                datetime(2019, 1, 8),
-                datetime(2019, 1, 7),
-                datetime(2019, 1, 4),
-                datetime(2019, 1, 3),
-                datetime(2019, 1, 2),
+                k in br.data[0].keys()
+                for k in [
+                    "bank_code",
+                    "bank_name",
+                    "base_rate",
+                    "base_lending_rate",
+                    "indicative_eff_lending_rate",
+                ]
             ]
         )
 
-    def test_data_complex(self, mock_fx_turn_over):
-        fto_date_multi = FxTurnOver(dates=[datetime(2019, 1, 2), datetime(2019, 1, 3)])
-        fto_month_multi = FxTurnOver(months=["2019-01", "2019-02"])
-        fto_range = FxTurnOver(start=datetime(2019, 1, 2), end=datetime(2019, 1, 4))
-        fto_range_multi = FxTurnOver(
-            start=datetime(2019, 1, 29), end=datetime(2019, 2, 3)
-        )
-        assert set([d["date"] for d in fto_date_multi.data]) == set(
-            [datetime(2019, 1, 2), datetime(2019, 1, 3)]
-        )
-        # assert set([d["date"] for d in fto_month_multi.data]) == set([])
-        assert set([d["date"] for d in fto_range.data]) == set(
-            [[datetime(2019, 1, 2), datetime(2019, 1, 3)], datetime(2019, 1, 4)]
-        )
-        # assert set([d["date"] for d in fto_range_multi.data]) == set([])
+    def test_single(self, mock_base_rate):
+        br = BaseRate("MBBEMYKL")
+        assert br.endpoints == ["base-rate/MBBEMYKL"]
+        assert len(br.data) == 1
+
+    def test_multi(self, mock_base_rate):
+        br = BaseRate(["MBBEMYKL", "CIBBMYKL"])
+        assert br.endpoints == ["base-rate/MBBEMYKL", "base-rate/CIBBMYKL"]
+        assert len(br.data) == 2
+
+
+class TestFxTurnOver:
+    def test_latest(self, mock_fx_turn_over):
+        fto = FxTurnOver()
+        assert fto.endpoints == ["fx-turn-over"]
+        assert len(fto.data) == 1
+        assert all([k in fto.data[0].keys() for k in ["date", "total_sum"]])
+
+    def test_date_single(self, mock_fx_turn_over):
+        fto = FxTurnOver(dates=datetime(2019, 1, 2))
+        assert fto.endpoints == ["fx-turn-over/date/2019-01-02"]
+        assert len(fto.data) == 1
+
+    def test_date_multi(self, mock_fx_turn_over):
+        fto = FxTurnOver(dates=[datetime(2019, 1, 2), datetime(2019, 1, 3)])
+        assert fto.endpoints == [
+            "fx-turn-over/date/2019-01-02",
+            "fx-turn-over/date/2019-01-03",
+        ]
+        assert len(fto.data) == 2
+
+    def test_range_within_month(self, mock_fx_turn_over):
+        fto = FxTurnOver(start=datetime(2019, 1, 2), end=datetime(2019, 1, 4))
+        assert fto.endpoints == ["fx-turn-over/year/2019/month/01"]
+        assert len(fto.data) == 3
+
+    def test_range_across_months(self, mock_fx_turn_over):
+        fto = FxTurnOver(start=datetime(2019, 1, 29), end=datetime(2019, 2, 4))
+        assert fto.endpoints == [
+            "fx-turn-over/year/2019/month/01",
+            "fx-turn-over/year/2019/month/02",
+        ]
+        assert len(fto.data) == 4
