@@ -8,8 +8,13 @@ HEADERS = {"Accept": "application/vnd.BNM.API.v1+json"}
 
 def lazy_property(fn):
     """Decorator that makes a property lazy-evaluated.
+    
+    Ref: https://stevenloria.com/lazy-properties/
+
+    Any code which is needed to set the property is only run when first accessing
+    the property. When accessing the code in the future, it retrives the cached values.
     """
-    # Ref: https://stevenloria.com/lazy-properties/
+
     attr_name = "_lazy_" + fn.__name__
 
     @property
@@ -22,6 +27,37 @@ def lazy_property(fn):
 
 
 class BnmpyItem:
+    """Main class which handles querying the live BNM API and storing the results.
+
+    This is designed to be subclassed, one subclass for each API endpoint.
+    e.g. "/base-rate" API endpoint is reflected as BaseRate class, which is subclass
+    of BnmpyItem.
+
+    BnmpyItem is lazy - it will only query API once you attempt to access data.
+    Just doing something like `b = BnmpyItem("welcome")` will not query the API,
+    but accessing `b.data` will query the API and cache the responses.
+
+    Parameters:
+    endpoints - str or list of strings. Used to form the requests made to API.
+
+    Attributes:
+    data - List of dictionaries, corresponding to the data retrieved from API. The
+           data might be filtered if more data is retrieved than what is requested. For
+           example, if you ask for data from dates "1/1/19" to "5/1/19", but BNM API 
+           responds with the whole of January's data, then only data from "1/1/19" to
+           "5/1/19" can be found here. 
+    requests - List of request objects. The request objects are from the `requests`
+               python package. The raw json responses can be found by analysing each
+               request object.
+    endpoints - List of endpoints. These are used to create the request objects above.
+    meta - Dictionary. Contains meta information returned by BNM API. Not implemented
+           yet.
+    _start, _end, _filter_key -
+        To be set by subclasses. If all 3 values are set, any dictionary in `data`
+        whose date (represented by `_filter_key`) is before `_start` or after `_end` 
+        will be excluded.
+    """
+
     def __init__(self, endpoints):
         self.meta = {}
         self.endpoints = ensure_list(endpoints)
@@ -34,24 +70,23 @@ class BnmpyItem:
 
     @lazy_property
     def data(self):
-        """Merge the `data` values from all of the responses into 1 dictionary."""
+        """List of dicts, based on the response from BNM API."""
+
+        # Merge all the response contents into a list of dictionaries: `data`.
         data = []
         for r in self.requests:
             if r.status_code == requests.codes.ok:
                 d = ensure_list(r.json()["data"])
                 data.extend(d)
 
-        if all(
-            [hasattr(self, "start"), hasattr(self, "end"), hasattr(self, "filter_key")]
-        ):
-            # Delete anything in data which is not between start and end dates.
-            self.start = to_datetime(self.start)
-            self.end = to_datetime(self.end)
-
+        # Delete anything in data which is not between start and end dates.
+        if all([hasattr(self, attr) for attr in ["_start", "_end", "_filter_key"]]):
+            self._start = to_datetime(self._start)
+            self._end = to_datetime(self._end)
             data = [
                 entry
                 for entry in data
-                if self.start <= to_datetime(entry[self.filter_key]) <= self.end
+                if self._start <= to_datetime(entry[self._filter_key]) <= self._end
             ]
 
         return data
@@ -75,9 +110,9 @@ class FxTurnOver(BnmpyItem):
         elif dates is not None:
             endpoints = endpoint_merge("fx-turn-over", to_strlist(dates=dates))
         elif start is not None and end is not None:
-            self.start = start
-            self.end = end
-            self.filter_key = "date"
+            self._start = start
+            self._end = end
+            self._filter_key = "date"
             endpoints = endpoint_merge(
                 "fx-turn-over", to_strlist(start=start, end=end, period="month")
             )
