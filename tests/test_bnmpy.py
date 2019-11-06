@@ -3,7 +3,7 @@ from datetime import datetime
 import pytest
 import responses
 
-from main import BASE_URL, BaseRate, BnmpyItem, FxTurnOver
+from bnmpy import BASE_URL, BaseRate, BnmpyItem, FxTurnOver
 
 
 @pytest.fixture
