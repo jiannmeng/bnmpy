@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List, Optional, Set, Tuple, Union
 
 from dateparser import parse
@@ -50,3 +50,45 @@ def has_tz(dt):
     """Returns True if datetime is timezone aware, and false otherwise."""
     # Ref: https://stackoverflow.com/a/50710825
     return dt.tzinfo is not None and dt.tzinfo.utcoffset(dt) is not None
+
+
+def to_strlist(dates=None, start=None, end=None, period="day"):
+    if dates is None:
+        start = to_datetime(start, tz_aware=False).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+        end = to_datetime(end, tz_aware=False).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+
+        if start > end:
+            start, end = end, start
+
+        dates = [start + timedelta(days=x) for x in range((end - start).days + 1)]
+    else:
+        dates = [to_datetime(dt) for dt in ensure_list(dates)]
+
+    if period == "day":
+        output = [dt.strftime("date/%Y-%m-%d") for dt in dates]  # "2019-01-01"
+    elif period == "month":
+        dates = [dt.replace(day=1) for dt in dates]
+        dates = list(set(dates))  # Remove duplicate months.
+        dates.sort()
+        output = [
+            dt.strftime("year/%Y/month/%m") for dt in dates
+        ]  # "year/2019/month/1"
+    elif period == "year":
+        dates = [dt.replace(month=1, day=1) for dt in dates]
+        dates = list(set(dates))  # Remove duplicate years.
+        dates.sort()
+        output = [dt.strftime("year/%Y") for dt in dates]  # "year/2019"
+    else:
+        raise ValueError("period must be 'day', 'month' or 'year'")
+
+    return output
+
+
+def endpoint_merge(s1, s2):
+    s1 = ensure_list(s1)
+    s2 = ensure_list(s2)
+    return [f"{x}/{y}" for x in s1 for y in s2]

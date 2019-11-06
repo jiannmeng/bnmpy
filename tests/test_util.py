@@ -1,6 +1,8 @@
-from util import ensure_list, to_datetime, has_tz
 from datetime import datetime, timezone
+
 from dateutil import tz
+
+from util import endpoint_merge, ensure_list, has_tz, to_datetime, to_strlist
 
 # Timezones
 UTC = tz.gettz("UTC")
@@ -74,3 +76,72 @@ def test_has_tz():
     assert not has_tz(datetime(2000, 1, 1))
     assert has_tz(datetime(2000, 1, 1, tzinfo=timezone.utc))
     assert has_tz(datetime(2000, 1, 1, tzinfo=MYT))
+
+
+def test_to_strlist():
+    # Dates mode.
+    assert to_strlist(dates=datetime(2019, 1, 1, 15, 15, 15)) == ["date/2019-01-01"]
+
+    # Range of dates, period="day".
+    assert to_strlist(
+        start=datetime(2019, 1, 1), end=datetime(2019, 1, 1), period="day"
+    ) == ["date/2019-01-01"]
+    assert to_strlist(
+        start=datetime(2018, 12, 30), end=datetime(2019, 1, 3), period="day"
+    ) == [
+        "date/2018-12-30",
+        "date/2018-12-31",
+        "date/2019-01-01",
+        "date/2019-01-02",
+        "date/2019-01-03",
+    ]
+
+    # Range mode, period="month"
+    assert to_strlist(
+        start=datetime(2019, 1, 1), end=datetime(2019, 1, 1), period="month"
+    ) == ["year/2019/month/01"]
+    assert to_strlist(
+        start=datetime(2018, 12, 30), end=datetime(2019, 1, 3), period="month"
+    ) == ["year/2018/month/12", "year/2019/month/01"]
+
+    # Range mode, period="year"
+    assert to_strlist(
+        start=datetime(2019, 1, 1), end=datetime(2019, 1, 1), period="year"
+    ) == ["year/2019"]
+    assert to_strlist(
+        start=datetime(2019, 1, 1), end=datetime(2019, 1, 15), period="year"
+    ) == ["year/2019"]
+    assert to_strlist(
+        start=datetime(2018, 12, 30), end=datetime(2019, 1, 3), period="year"
+    ) == ["year/2018", "year/2019"]
+
+    # Strings.
+    assert to_strlist(start="2018-12-30", end="2019-1-3", period="day") == [
+        "date/2018-12-30",
+        "date/2018-12-31",
+        "date/2019-01-01",
+        "date/2019-01-02",
+        "date/2019-01-03",
+    ]
+    assert to_strlist(start="30/12/18", end="3/1/19", period="day") == [
+        "date/2018-12-30",
+        "date/2018-12-31",
+        "date/2019-01-01",
+        "date/2019-01-02",
+        "date/2019-01-03",
+    ]
+
+
+def test_endpoint_merge():
+    assert endpoint_merge("ep", "year/2019") == ["ep/year/2019"]
+    assert endpoint_merge(["ep"], ["year/2019"]) == ["ep/year/2019"]
+    assert endpoint_merge(
+        ["ep/bank1", "ep/bank2", "ep/bank3"], ["year/2019", "year/2020"]
+    ) == [
+        "ep/bank1/year/2019",
+        "ep/bank1/year/2020",
+        "ep/bank2/year/2019",
+        "ep/bank2/year/2020",
+        "ep/bank3/year/2019",
+        "ep/bank3/year/2020",
+    ]
