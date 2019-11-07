@@ -43,6 +43,19 @@ class TestInterbankSwap:
         ]
         assert len(fto.data) == 2
 
+    def test_yearmonth_single(self, mock_interbank_swap):
+        fto = Bnmpy().interbank_swap(year=2019, month=1)
+        assert fto.endpoints == ["interbank-swap/year/2019/month/01"]
+        assert len(fto.data) == 21
+
+    def test_yearmonth_multi(self, mock_interbank_swap):
+        fto = Bnmpy().interbank_swap(year=2019, month=[1, 2])
+        assert fto.endpoints == [
+            "interbank-swap/year/2019/month/01",
+            "interbank-swap/year/2019/month/02",
+        ]
+        assert len(fto.data) == 21 + 17
+
     def test_range_within_month(self, mock_interbank_swap):
         fto = Bnmpy().interbank_swap(
             start=datetime(2019, 1, 2), end=datetime(2019, 1, 4)

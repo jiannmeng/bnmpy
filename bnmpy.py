@@ -99,11 +99,18 @@ class Bnmpy:
             self.endpoints = [f"base-rate/{b}" for b in bank_code]
         return self
 
-    def fx_turn_over(self, date=None, start=None, end=None):
-        if date is None and start is None and end is None:
+    def fx_turn_over(self, date=None, year=None, month=None, start=None, end=None):
+        if all(arg is None for arg in [date, year, month, start, end]):
             self.endpoints = ["fx-turn-over"]
         elif date is not None:
             self.endpoints = endpoint_merge("fx-turn-over", to_strlist(dates=date))
+        elif year is not None and month is not None:
+            year = ensure_list(year)
+            year = [f"year/{yr}" for yr in year]
+            month = ensure_list(month)
+            # Pad the month to 2 digits.
+            month = [f"month/{str(mth).zfill(2)}" for mth in month]
+            self.endpoints = endpoint_merge("fx-turn-over", year, month)
         elif start is not None and end is not None:
             self._start = start
             self._end = end
@@ -113,11 +120,18 @@ class Bnmpy:
             )
         return self
 
-    def interbank_swap(self, date=None, start=None, end=None):
-        if date is None and start is None and end is None:
+    def interbank_swap(self, date=None, year=None, month=None, start=None, end=None):
+        if all(arg is None for arg in [date, year, month, start, end]):
             self.endpoints = ["interbank-swap"]
         elif date is not None:
             self.endpoints = endpoint_merge("interbank-swap", to_strlist(dates=date))
+        elif year is not None and month is not None:
+            year = ensure_list(year)
+            year = [f"year/{yr}" for yr in year]
+            month = ensure_list(month)
+            # Pad the month to 2 digits.
+            month = [f"month/{str(mth).zfill(2)}" for mth in month]
+            self.endpoints = endpoint_merge("interbank-swap", year, month)
         elif start is not None and end is not None:
             self._start = start
             self._end = end

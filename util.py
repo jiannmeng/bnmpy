@@ -77,7 +77,7 @@ def to_strlist(dates=None, start=None, end=None, period="day"):
         dates.sort()
         output = [
             dt.strftime("year/%Y/month/%m") for dt in dates
-        ]  # "year/2019/month/1"
+        ]  # "year/2019/month/01"
     elif period == "year":
         dates = [dt.replace(month=1, day=1) for dt in dates]
         dates = list(set(dates))  # Remove duplicate years.

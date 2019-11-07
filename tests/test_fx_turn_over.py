@@ -26,6 +26,19 @@ class TestFxTurnOver:
         ]
         assert len(fto.data) == 2
 
+    def test_yearmonth_single(self, mock_fx_turn_over):
+        fto = Bnmpy().fx_turn_over(year=2019, month=1)
+        assert fto.endpoints == ["fx-turn-over/year/2019/month/01"]
+        assert len(fto.data) == 21
+
+    def test_yearmonth_multi(self, mock_fx_turn_over):
+        fto = Bnmpy().fx_turn_over(year=2019, month=[1, 2])
+        assert fto.endpoints == [
+            "fx-turn-over/year/2019/month/01",
+            "fx-turn-over/year/2019/month/02",
+        ]
+        assert len(fto.data) == 21 + 17
+
     def test_range_within_month(self, mock_fx_turn_over):
         fto = Bnmpy().fx_turn_over(start=datetime(2019, 1, 2), end=datetime(2019, 1, 4))
         assert fto.endpoints == ["fx-turn-over/year/2019/month/01"]
