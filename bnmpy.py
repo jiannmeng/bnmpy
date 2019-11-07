@@ -8,7 +8,7 @@ HEADERS = {"Accept": "application/vnd.BNM.API.v1+json"}
 
 def lazy_property(fn):
     """Decorator that makes a property lazy-evaluated.
-    
+
     Ref: https://stevenloria.com/lazy-properties/
 
     Any code which is needed to set the property is only run when first accessing
@@ -43,9 +43,9 @@ class BnmpyItem:
     Attributes:
     data - List of dictionaries, corresponding to the data retrieved from API. The
            data might be filtered if more data is retrieved than what is requested. For
-           example, if you ask for data from dates "1/1/19" to "5/1/19", but BNM API 
+           example, if you ask for data from dates "1/1/19" to "5/1/19", but BNM API
            responds with the whole of January's data, then only data from "1/1/19" to
-           "5/1/19" can be found here. 
+           "5/1/19" can be found here.
     requests - List of request objects. The request objects are from the `requests`
                python package. The raw json responses can be found by analysing each
                request object.
@@ -54,7 +54,7 @@ class BnmpyItem:
            yet.
     _start, _end, _filter_key -
         To be set by subclasses. If all 3 values are set, any dictionary in `data`
-        whose date (represented by `_filter_key`) is before `_start` or after `_end` 
+        whose date (represented by `_filter_key`) is before `_start` or after `_end`
         will be excluded.
     """
 
