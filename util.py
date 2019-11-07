@@ -4,6 +4,7 @@ from typing import List, Optional, Set, Tuple, Union
 from dateparser import parse
 from dateutil import tz
 from dateutil.parser import ParserError
+from itertools import product
 
 
 def ensure_list(s: Optional[Union[str, List[str], Tuple[str], Set[str]]]) -> List[str]:
@@ -88,7 +89,15 @@ def to_strlist(dates=None, start=None, end=None, period="day"):
     return output
 
 
-def endpoint_merge(s1, s2):
-    s1 = ensure_list(s1)
-    s2 = ensure_list(s2)
-    return [f"{x}/{y}" for x in s1 for y in s2]
+def endpoint_merge(*args):
+    """Returns every combination of each list entered, separated by "/".
+
+    e.g. endpoint_merge(["a", "b"], ["x", "y"]) ==
+        ["a/x", "a/y", "b/x", "b/y"]
+
+    Useful for generating many combinations of endpoints, such as combinations of
+    currency codes and dates.
+    """
+    args = [ensure_list(a) for a in args]
+    combinations = list(product(*args))
+    return ["/".join(c) for c in combinations]

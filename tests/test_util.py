@@ -133,15 +133,17 @@ def test_to_strlist():
 
 
 def test_endpoint_merge():
-    assert endpoint_merge("ep", "year/2019") == ["ep/year/2019"]
-    assert endpoint_merge(["ep"], ["year/2019"]) == ["ep/year/2019"]
-    assert endpoint_merge(
-        ["ep/bank1", "ep/bank2", "ep/bank3"], ["year/2019", "year/2020"]
-    ) == [
-        "ep/bank1/year/2019",
-        "ep/bank1/year/2020",
-        "ep/bank2/year/2019",
-        "ep/bank2/year/2020",
-        "ep/bank3/year/2019",
-        "ep/bank3/year/2020",
+    assert endpoint_merge(None) == []
+    assert endpoint_merge("a") == ["a"]
+    assert endpoint_merge(["a"]) == ["a"]
+    assert endpoint_merge("a", "f", "x") == ["a/f/x"]
+    assert endpoint_merge(["a", "b"], ["f", "g"], ["x", "y"]) == [
+        "a/f/x",
+        "a/f/y",
+        "a/g/x",
+        "a/g/y",
+        "b/f/x",
+        "b/f/y",
+        "b/g/x",
+        "b/g/y",
     ]
