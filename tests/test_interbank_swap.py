@@ -1,6 +1,7 @@
+from datetime import datetime
+
 import fixtures
 from bnmpy import Bnmpy
-from datetime import datetime
 
 mock_interbank_swap = fixtures.mock_interbank_swap
 

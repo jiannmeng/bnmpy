@@ -1,6 +1,7 @@
+from datetime import datetime
+
 import fixtures
 from bnmpy import Bnmpy
-from datetime import datetime
 
 mock_fx_turn_over = fixtures.mock_fx_turn_over
 

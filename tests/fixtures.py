@@ -1,5 +1,6 @@
 import pytest
 import responses
+
 from bnmpy import BASE_URL
 
 null = None
