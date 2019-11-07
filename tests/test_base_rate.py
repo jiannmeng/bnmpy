@@ -1,7 +1,7 @@
 import pytest
 import responses
 
-from bnmpy import BASE_URL, BaseRate
+from bnmpy import BASE_URL, Bnmpy
 
 null = None
 
@@ -311,7 +311,7 @@ def mock_base_rate():
 
 class TestBaseRate:
     def test_latest(self, mock_base_rate):
-        br = BaseRate()
+        br = Bnmpy().base_rate()
         assert br.endpoints == ["base-rate"]
         assert len(br.data) == 35
         assert all(
@@ -328,11 +328,11 @@ class TestBaseRate:
         )
 
     def test_single(self, mock_base_rate):
-        br = BaseRate("MBBEMYKL")
+        br = Bnmpy().base_rate("MBBEMYKL")
         assert br.endpoints == ["base-rate/MBBEMYKL"]
         assert len(br.data) == 1
 
     def test_multi(self, mock_base_rate):
-        br = BaseRate(["MBBEMYKL", "CIBBMYKL"])
+        br = Bnmpy().base_rate(["MBBEMYKL", "CIBBMYKL"])
         assert br.endpoints == ["base-rate/MBBEMYKL", "base-rate/CIBBMYKL"]
         assert len(br.data) == 2

@@ -26,7 +26,7 @@ def lazy_property(fn):
     return _lazy_property
 
 
-class BnmpyItem:
+class Bnmpy:
     """Main class which handles querying the live BNM API and storing the results.
 
     This is designed to be subclassed, one subclass for each API endpoint.
@@ -58,7 +58,7 @@ class BnmpyItem:
         will be excluded.
     """
 
-    def __init__(self, endpoints):
+    def __init__(self, endpoints=None):
         self.meta = {}
         self.endpoints = ensure_list(endpoints)
 
@@ -91,44 +91,80 @@ class BnmpyItem:
 
         return data
 
-
-class BaseRate(BnmpyItem):
-    def __init__(self, bank_codes=None):
-        if bank_codes is None:
-            endpoints = "base-rate"
+    def base_rate(self, bank_code=None):
+        if bank_code is None:
+            self.endpoints = ["base-rate"]
         else:
-            bank_codes = ensure_list(bank_codes)
-            endpoints = [f"base-rate/{b}" for b in bank_codes]
-        super().__init__(endpoints=endpoints)
+            bank_code = ensure_list(bank_code)
+            self.endpoints = [f"base-rate/{b}" for b in bank_code]
+        return self
 
-
-class FxTurnOver(BnmpyItem):
-    def __init__(self, dates=None, start=None, end=None):
-        if dates is None and start is None and end is None:
-            endpoints = "fx-turn-over"
-        elif dates is not None:
-            endpoints = endpoint_merge("fx-turn-over", to_strlist(dates=dates))
+    def fx_turn_over(self, date=None, start=None, end=None):
+        if date is None and start is None and end is None:
+            self.endpoints = ["fx-turn-over"]
+        elif date is not None:
+            self.endpoints = endpoint_merge("fx-turn-over", to_strlist(dates=date))
         elif start is not None and end is not None:
             self._start = start
             self._end = end
             self._filter_key = "date"
-            endpoints = endpoint_merge(
+            self.endpoints = endpoint_merge(
                 "fx-turn-over", to_strlist(start=start, end=end, period="month")
             )
-        super().__init__(endpoints=endpoints)
+        return self
 
-
-class InterbankSwap(BnmpyItem):
-    def __init__(self, dates=None, start=None, end=None):
-        if dates is None and start is None and end is None:
-            endpoints = "interbank-swap"
-        elif dates is not None:
-            endpoints = endpoint_merge("interbank-swap", to_strlist(dates=dates))
+    def interbank_swap(self, date=None, start=None, end=None):
+        if date is None and start is None and end is None:
+            self.endpoints = ["interbank-swap"]
+        elif date is not None:
+            self.endpoints = endpoint_merge("interbank-swap", to_strlist(dates=date))
         elif start is not None and end is not None:
             self._start = start
             self._end = end
             self._filter_key = "date"
-            endpoints = endpoint_merge(
+            self.endpoints = endpoint_merge(
                 "interbank-swap", to_strlist(start=start, end=end, period="month")
             )
-        super().__init__(endpoints=endpoints)
+        return self
+
+
+# class BaseRate(Bnmpy):
+#     def __init__(self, bank_codes=None):
+#         if bank_codes is None:
+#             endpoints = "base-rate"
+#         else:
+#             bank_codes = ensure_list(bank_codes)
+#             endpoints = [f"base-rate/{b}" for b in bank_codes]
+#         super().__init__(endpoints=endpoints)
+
+
+# class FxTurnOver(Bnmpy):
+#     def __init__(self, date=None, start=None, end=None):
+#         if date is None and start is None and end is None:
+#             endpoints = "fx-turn-over"
+#         elif date is not None:
+#             endpoints = endpoint_merge("fx-turn-over", to_strlist(dates=date))
+#         elif start is not None and end is not None:
+#             self._start = start
+#             self._end = end
+#             self._filter_key = "date"
+#             endpoints = endpoint_merge(
+#                 "fx-turn-over", to_strlist(start=start, end=end, period="month")
+#             )
+#         super().__init__(endpoints=endpoints)
+
+
+# class InterbankSwap(Bnmpy):
+#     def __init__(self, date=None, start=None, end=None):
+#         if date is None and start is None and end is None:
+#             endpoints = "interbank-swap"
+#         elif date is not None:
+#             endpoints = endpoint_merge("interbank-swap", to_strlist(dates=date))
+#         elif start is not None and end is not None:
+#             self._start = start
+#             self._end = end
+#             self._filter_key = "date"
+#             endpoints = endpoint_merge(
+#                 "interbank-swap", to_strlist(start=start, end=end, period="month")
+#             )
+#         super().__init__(endpoints=endpoints)

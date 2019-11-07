@@ -1,7 +1,7 @@
 import pytest
 import responses
 
-from bnmpy import BASE_URL, BnmpyItem
+from bnmpy import BASE_URL, Bnmpy
 
 
 @pytest.fixture
@@ -37,25 +37,25 @@ def mock_basic():
         yield r
 
 
-class TestBnmpyItem:
+class TestBnmpyCore:
     def test_data_single(self, mock_basic):
-        b = BnmpyItem("single")
+        b = Bnmpy("single")
         assert b.data == [{"hello": "world"}]
 
     def test_data_list_single(self, mock_basic):
-        b = BnmpyItem("list-single")
+        b = Bnmpy("list-single")
         assert b.data == [{"hello": "world"}]
 
     def test_data_list_multi(self, mock_basic):
-        b = BnmpyItem("list-multi")
+        b = Bnmpy("list-multi")
         assert b.data == [{"hello": "world"}, {"foo": "bar"}]
 
     def test_data_none(self, mock_basic):
-        b = BnmpyItem("none")
+        b = Bnmpy("none")
         assert b.data == []
 
     def test_data_list_combine(self, mock_basic):
-        b = BnmpyItem(["none", "single", "list-single", "list-multi", "fail"])
+        b = Bnmpy(["none", "single", "list-single", "list-multi", "fail"])
         assert b.data == [
             {"hello": "world"},
             {"hello": "world"},
