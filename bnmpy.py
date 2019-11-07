@@ -99,7 +99,6 @@ class BaseRate(BnmpyItem):
         else:
             bank_codes = ensure_list(bank_codes)
             endpoints = [f"base-rate/{b}" for b in bank_codes]
-
         super().__init__(endpoints=endpoints)
 
 
@@ -116,5 +115,20 @@ class FxTurnOver(BnmpyItem):
             endpoints = endpoint_merge(
                 "fx-turn-over", to_strlist(start=start, end=end, period="month")
             )
+        super().__init__(endpoints=endpoints)
 
+
+class InterbankSwap(BnmpyItem):
+    def __init__(self, dates=None, start=None, end=None):
+        if dates is None and start is None and end is None:
+            endpoints = "interbank-swap"
+        elif dates is not None:
+            endpoints = endpoint_merge("interbank-swap", to_strlist(dates=dates))
+        elif start is not None and end is not None:
+            self._start = start
+            self._end = end
+            self._filter_key = "date"
+            endpoints = endpoint_merge(
+                "interbank-swap", to_strlist(start=start, end=end, period="month")
+            )
         super().__init__(endpoints=endpoints)

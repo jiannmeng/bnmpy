@@ -3,6 +3,8 @@ import responses
 
 from bnmpy import BASE_URL, BaseRate
 
+null = None
+
 
 @pytest.fixture
 def mock_base_rate():
@@ -206,7 +208,7 @@ def mock_base_rate():
                         "bank_name": "Agrobank",
                         "base_rate": 3.6,
                         "base_financing_rate": 6.75,
-                        "indicative_eff_lending_rate": None,
+                        "indicative_eff_lending_rate": null,
                     },
                     {
                         "bank_code": "BSNAMYK1",
@@ -314,7 +316,7 @@ class TestBaseRate:
         assert len(br.data) == 35
         assert all(
             [
-                k in br.data[0].keys()
+                k in br.data[0]
                 for k in [
                     "bank_code",
                     "bank_name",

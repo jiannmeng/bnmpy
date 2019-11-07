@@ -111,7 +111,7 @@ class TestFxTurnOver:
         fto = FxTurnOver()
         assert fto.endpoints == ["fx-turn-over"]
         assert len(fto.data) == 1
-        assert all([k in fto.data[0].keys() for k in ["date", "total_sum"]])
+        assert all([k in fto.data[0] for k in ["date", "total_sum"]])
 
     def test_date_single(self, mock_fx_turn_over):
         fto = FxTurnOver(dates=datetime(2019, 1, 2))
