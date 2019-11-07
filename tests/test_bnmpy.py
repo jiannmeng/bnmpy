@@ -1,40 +1,7 @@
-import pytest
-import responses
+import fixtures
+from bnmpy import Bnmpy
 
-from bnmpy import BASE_URL, Bnmpy
-
-
-@pytest.fixture
-def mock_basic():
-    with responses.RequestsMock(assert_all_requests_are_fired=False) as r:
-        r.add(
-            responses.GET, BASE_URL + "none", json={"data": None}, status=200,
-        )
-        r.add(
-            responses.GET,
-            BASE_URL + "single",
-            json={"data": {"hello": "world"}},
-            status=200,
-        )
-        r.add(
-            responses.GET,
-            BASE_URL + "list-single",
-            json={"data": [{"hello": "world"}]},
-            status=200,
-        )
-        r.add(
-            responses.GET,
-            BASE_URL + "list-multi",
-            json={"data": [{"hello": "world"}, {"foo": "bar"}]},
-            status=200,
-        )
-        r.add(
-            responses.GET,
-            BASE_URL + "fail",
-            json={"message": "No records found.", "code": 404},
-            status=404,
-        )
-        yield r
+mock_basic = fixtures.mock_basic
 
 
 class TestBnmpyCore:
